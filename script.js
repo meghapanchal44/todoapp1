@@ -1,96 +1,184 @@
-const todoObjectList = [];
+let text=document.getElementById("myInput");
+let btn=document.getElementById("add_button");
+let result=document.getElementById("result");
+let cont=document.getElementById("myUl");
+let array=[];
+let markArray=[];
+if(array.length==0);
+{
+    result.innerHTML='<h4 class="white">nothing to show</h4>';
+}
+showElement();
+btn.addEventListener('click',()=>{
+    if(text.value.trim()=== ""){
+        alert("please enter something");
+    }
+    else{
+        let tasks=localStorage.getItem("tasks");
+        if(tasks==null){
+            array=[];
+        }
+        else{
+            array=JSON.parse(tasks);
+        }
+        array.push(text.value);
+        localStorage.setItem("tasks",JSON.stringify(array));
+        text.value=" ";
+        showElement();
+    }
 
+});
+text.addEventListener('keyup',(event)=>{
+    if(event.keyCode ===13){
+        event.preventDefault();
+        btn.click();
+    }
+});
+function showElement(){
+    let tasks=localStorage.getItem("tasks");
+    if(tasks == null)
+    {
+        array=[];
+    }
+    else{
+        array=JSON.parse(tasks);
+    }
+   
+    let html="";
+    array.forEach((element,index) => {
+        html +=`<div id="elem" class="elem${index}">
+        <div id="${index}" class="col store">${element}</div>
+        
+        <div class="col">
+        <button id="btn2" onclick="editdiv(${index})" class="btn btn2 btn-info"> <i class="fa fa-pencil"></i></button> 
+        
+        <button id="btn3" onclick="delettask(${index})" class="btn btn3 btn-info"><i class="fa fa-trash"></i></button>
+        </div></div>`;
+        //<h2 class="white remove">${index+1}</h2>`;
+        console.log(html);
+        
+    });
+    let checks=localStorage.getItem("checks");
+    if(checks==null)
+    {
+        markArray=[];
+    }
+    else{
+        markArray=JSON.parse(checks);
 
-
-class Todo_Class {
-    constructor(item){
-        this.ulElement =item;
-    } 
-
-    add() {
-        const todoInput = document.querySelector("#myInput").value;
-        if (todoInput == "") {
-            alert("You did not enter any item!") 
-        } else {
-            const todoObject = {
-                id : todoObjectList.length,
-                todoText : todoInput,
-                isDone : false,
-            }
-
-        todoObjectList.unshift(todoObject);
-        this.display();
-        document.querySelector("#myInput").value = '';
-
+    }
+    for(let i=0;i<array.length;i++)
+    {
+        markArray.push('none');
+    }
+    localStorage.setItem("checks",JSON.stringify(markArray));
+    if(array.length != 0)
+    {
+        result.innerHTML=html;
+    }
+    else{
+        result.innerHTML='<h4 class="white">nothing to show</h4>';  
+    }
+    for(let i=0;i<markArray.length;i++)
+    {
+        let checkboxvar= document.getElementById(`$cd{i}`); 
+        if(markArray[i]=='line-through'){
+            markTask(i);
+            checkboxvar.checked=true;
         }
     }
-
-    done_undone(x) {
-        const selectedTodoIndex = todoObjectList.findIndex((item)=> item.id == x);
-        console.log(todoObjectList[selectedTodoIndex].isDone);
-        todoObjectList[selectedTodoIndex].isDone == false ? todoObjectList[selectedTodoIndex].isDone = true : todoObjectList[selectedTodoIndex].isDone = false;
-        this.display();
+};
+function delettask(index){
+    if(confirm("you want to delete task")){
+        let tasks=localStorage.getItem("tasks")
+        if(tasks==null)
+        {
+            markArray=[];
+        }
+        else{
+            markArray=JSON.parse(tasks);
+        }
+        array.splice(index,1);
+        localStorage.setItem("tasks",JSON.stringify(array));
+        let checks=localStorage.getItem("checks");
+        if(checks==null){
+            markArray=[];
+        }
+        else{
+            markArray=JSON.parse(checks);
+        }
+        array.splice(index,1);
+        localStorage.setItem("checks",JSON.stringify(markArray));
+        showElement();
+    }
+}
+function markTask(index){
+    let store = document.getElementById(`${index}`);
+    if(store.style.textDecoration === "none"){
+        store.style.textDecoration="line-through";
+        let checks=localStorage.getItem("checks");
+        if(checks==null){
+            markArray=[];
+        }
+        else{
+            markArray=JSON.parse(checks);
+        }
+        markArray.splice(index,1,store.style.textDecoration);
+        localStorage.setItem("checks",JSON.stringify(markArray));
+        //showElement();
+    }
+    else{
+        store.style.textDecoration="none";
+        let checks=localStorage.getItem("checks");
+        if(checks==null)
+        {
+            markArray=[];
+        }
+        else{
+            markArray=JSON.parse(checks);
+        }
+        markArray.splice(index,1,store.style.textDecoration);
+            localStorage.setItem("checks",json.stringify(markArray));
     }
 
-    deleteElement(z) {
-        const selectedDelIndex = todoObjectList.findIndex((item)=> item.id == z);
-
-        todoObjectList.splice(selectedDelIndex,1);
-
-        this.display();
+}
+function editdiv(index){
+    let noofTextArea = document.getElementsByClassName("textarea").length;
+    let store= document.getElementById(`${index}`);
+    if(noofTextArea === 0){
+        let html=store.innerHTML.trim();
+        store.innerHTML=`<textarea class="textarea" id="textarea" row=5>${html}</textarea>`;
     }
-
-
-    display() {
-        this.ulElement.innerHTML = "";
-
-        todoObjectList.forEach((object_item) => {
-
-            const liElement = document.createElement("li");
-            const delBtn = document.createElement("i");
-
-            liElement.innerText = object_item.todoText;
-            liElement.setAttribute("data-id", object_item.id);
-
-            delBtn.setAttribute("data-id", object_item.id);
-            delBtn.classList.add("far", "fa-trash-alt");
-
-            liElement.appendChild(delBtn);
-            
-            delBtn.addEventListener("click", function(e) {
-                const deleteId = e.target.getAttribute("data-id");
-                myTodoList.deleteElement(deleteId);
-            })
-            
-            liElement.addEventListener("click", function(e) {
-                const selectedId = e.target.getAttribute("data-id");
-                myTodoList.done_undone(selectedId);
-            })
-
-            if (object_item.isDone) {
-                liElement.classList.add("checked");
+    let textarea=document.querySelector(".textarea");
+    textarea.focus();
+    textarea.addEventListener('blur',()=>{
+        if(textarea.value.trim===0){
+            alert("enter something");
+        }
+        else{
+            store.innerHTML=textarea.value;
+            let tasks=localStorage.getItem("tasks");
+            if(tasks==null)
+            {
+                array=[];
             }
+            else{
+                array=JSON.parse(tasks);
+            }
+            array.splice(index,1,textarea.value);
+            localStorage.setItem("tasks",JSON.stringify(array));
+        }
+    });
 
-            this.ulElement.appendChild(liElement);
-        })
+}
+function deleteAll(){
+    if(localStorage.tasks == null){
+        alert("Nothing to delete! You can add your task.");
     }
-} 
-
-
-
-
-////-----MAIN PROGRAM------------
-const listSection = document.querySelector("#myUL");
-
-myTodoList = new Todo_Class(listSection);
-
-
-document.querySelector(".addBtn").addEventListener("click", function() {
-    myTodoList.add()
-})
-
-document.querySelector("#myInput").addEventListener("keydown", function(e) {
-    if (e.keyCode == 13) {
-        myTodoList.add()
+    else{
+        if(confirm("You want delete your all task?")){
+            localStorage.clear();
+            showElement();
+        }
     }
-})
+}
